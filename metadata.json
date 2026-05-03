@@ -1,0 +1,5 @@
+{
+  "name": "AI Bible App",
+  "description": "A secure, voice-enabled AI application for sermon generation, Bible queries, children's stories, and worship song creation. Powered by Gemini AI with support for multiple Bible versions.",
+  "requestFramePermissions": ["microphone"]
+}
