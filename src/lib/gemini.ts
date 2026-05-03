@@ -1,54 +1,69 @@
-import { GoogleGenAI, Modality, Type } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 
 const apiKey = process.env.GEMINI_API_KEY!;
 const ai = new GoogleGenAI({ apiKey });
 
+const FAST_MODEL = "gemini-3-flash-preview";
+
 export async function generateSermon(topic: string, version: string = "KJV") {
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Generate a detailed sermon based on the topic: "${topic}". Use the ${version} Bible version for references. Include an introduction, three main points with scripture, and a conclusion.`,
+    model: FAST_MODEL,
+    config: {
+      systemInstruction: "You are an expert Bible scholar and preacher. Provide concise yet powerful sermons. Use Markdown. Focus on the requested Bible version."
+    },
+    contents: `Topic: "${topic}". Version: ${version}. Provide a 3-point sermon structure with scripture.`
   });
   return response.text;
 }
 
 export async function generateSong(theme: string, version: string = "KJV") {
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Create lyrics for a praise and worship song about: "${theme}". Use the ${version} Bible version for references. Include verses, a chorus, and a bridge.`,
+    model: FAST_MODEL,
+    config: {
+      systemInstruction: "You are a worship leader. Create inspiring song lyrics. Use Markdown."
+    },
+    contents: `Theme: "${theme}". Bible Version for inspiration: ${version}. Include verse/chorus/bridge.`
   });
   return response.text;
 }
 
 export async function generateStory(topic: string, version: string = "KJV") {
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Write a children's Bible story about: "${topic}". Use the ${version} Bible version for references. Make it engaging, simple, and include a moral lesson.`,
+    model: FAST_MODEL,
+    config: {
+      systemInstruction: "You are a master storyteller for children. Use simple, engaging language and Markdown."
+    },
+    contents: `Story about "${topic}". Version: ${version}. Include a moral.`
   });
   return response.text;
 }
 
 export async function generateMnemonics(verse: string, version: string = "KJV") {
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Create a mnemonic aid or a simple way to memorize this Bible verse: "${verse}". Use the ${version} version.`,
+    model: FAST_MODEL,
+    config: {
+      systemInstruction: "You create memory aids for Bible study. Be creative and concise."
+    },
+    contents: `Create a mnemonic aid for "${verse}" (${version}).`
   });
   return response.text;
 }
 
 export async function queryBible(query: string, version: string = "KJV") {
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: `Using the ${version} Bible version context, answer this query: "${query}"`,
+    model: FAST_MODEL,
     config: {
-      tools: [{ googleSearch: {} }],
+      systemInstruction: `You are a Bible AI developed for secure queries. Use the ${version} Bible version. Be direct and helpful. Use Markdown.`,
+      tools: [{ googleSearch: {} } as any],
     },
+    contents: query,
   });
   return response.text;
 }
 
 export async function textToSpeech(text: string, voice: 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr' = 'Kore') {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-tts",
+    model: "gemini-3.1-flash-tts-preview",
     contents: [{ parts: [{ text }] }],
     config: {
       responseModalities: [Modality.AUDIO],
@@ -57,7 +72,7 @@ export async function textToSpeech(text: string, voice: 'Puck' | 'Charon' | 'Kor
           prebuiltVoiceConfig: { voiceName: voice },
         },
       },
-    },
+    } as any,
   });
 
   const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
